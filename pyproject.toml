@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guardrail"
+version = "0.1.0"
+description = "Zero-false-positive data drift guardrails using DAFSA + BK-tree"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+
+authors = [
+  { name = "Chris Wood", email = "chris.wood@qckfx.com" }
+]
+
+dependencies = [
+  "pandas>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/qckfx/guardrail"
+Changelog = "https://github.com/qckfx/guardrail/releases"
+
+[project.scripts]
+guardrail = "guardrail.core:main"
