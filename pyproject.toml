@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68", "wheel", "Cython>=3.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "guardrail"
-version = "0.1.0"
+version = "0.1.0-alpha"
 description = "Zero-false-positive data drift guardrails using DAFSA + BK-tree"
 readme = "README.md"
 requires-python = ">=3.9"
