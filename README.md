@@ -1,4 +1,4 @@
-# guardrail
+# driftfx
 
 🚦  Zero-false-positive drift detection for analytics pipelines.
 
@@ -6,15 +6,15 @@
 
 # Get Started
 ```bash
-pip install guardrail
+pip install driftfx
 ```
 
 # Python Usage
 ```python
-import pandas as pd, guardrail as gr
+import pandas as pd, driftfx as dr
 
-gr.snapshot(df_baseline, "baseline", cols=["name"])
-result = gr.check(df_new, "baseline", cols=["name"])
+dr.snapshot(df_baseline, "baseline", cols=["name"])
+result = dr.check(df_new, "baseline", cols=["name"])
 
 if not result.is_clean():
     if result.renames:
@@ -26,11 +26,11 @@ if not result.is_clean():
 # CLI Usage
 ```bash
 # snapshot baseline
-$ guardrail snapshot --input data.parquet --cols name --baseline baseline/
+$ driftfx snapshot --input data.parquet --cols name --baseline baseline/
 $ Snapshot complete ✓
 
 # check new batch
-$ guardrail check --input new.parquet --cols name --baseline baseline/
+$ driftfx check --input new.parquet --cols name --baseline baseline/
 $ [✖] name: 17 renames / 31 new codes
 $ Drift detected: 48 anomalies 
 ```
@@ -41,7 +41,7 @@ With Cython-optimized Levenshtein distance calculations:
 
 | Operation | Time | Throughput | Dataset |
 |-----------|------|------------|---------|
-| Snapshot | 1.9s | 5,264 rows/s | 10,000 unique values |
-| Check | 1.3s | 7,893 rows/s | 10,050 rows |
+| Snapshot | 1.6s | 5,264 rows/s | 10,000 unique values |
+| Check | 1.2s | 7,893 rows/s | 10,050 rows |
 
 The Cython implementation provides an **8x speedup** for snapshot operations compared to pure Python.

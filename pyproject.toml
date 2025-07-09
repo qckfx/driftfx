@@ -3,8 +3,8 @@ requires = ["setuptools>=68", "wheel", "Cython>=3.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "guardrail"
-version = "0.1.0-alpha"
+name = "driftfx"
+version = "0.1.0"
 description = "Zero-false-positive data drift guardrails using DAFSA + BK-tree"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -19,8 +19,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/qckfx/guardrail"
-Changelog = "https://github.com/qckfx/guardrail/releases"
+Homepage = "https://github.com/qckfx/driftfx"
+Changelog = "https://github.com/qckfx/driftfx/releases"
 
 [project.scripts]
-guardrail = "guardrail.core:main"
+driftfx = "driftfx.core:main"

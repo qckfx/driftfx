@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Setup script for guardrail with Cython extensions."""
+"""Setup script for driftfx with Cython extensions."""
 
 import os
 import sys
@@ -20,8 +20,8 @@ extensions = []
 if USE_CYTHON:
     ext_modules = [
         Extension(
-            "guardrail._cython.levenshtein",
-            ["guardrail/_cython/levenshtein.pyx"],
+            "driftfx._cython.levenshtein",
+            ["driftfx/_cython/levenshtein.pyx"],
             extra_compile_args=["-O3", "-march=native"] if sys.platform != "win32" else ["/O2"],
         )
     ]
@@ -37,14 +37,14 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    name="guardrail",
-    version="0.1.0-alpha",
+    name="driftfx",
+    version="0.1.0",
     description="Zero-false-positive data drift guardrails using DAFSA + BK-tree",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Chris Wood",
     author_email="chris.wood@qckfx.com",
-    url="https://github.com/qckfx/guardrail",
+    url="https://github.com/qckfx/driftfx",
     packages=find_packages(),
     install_requires=[
         "pandas>=2.0",
@@ -64,7 +64,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "guardrail=guardrail.core:main",
+            "driftfx=driftfx.core:main",
         ],
     },
 )

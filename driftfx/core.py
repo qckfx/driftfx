@@ -1,19 +1,17 @@
-# guardrail/core.py — CLI **and** programmatic API
-# ====================================================
-"""Guardrail: zero‑false‑positive drift detection via DAFSA + BK‑trees.
+"""driftfx: zero‑false‑positive drift detection via DAFSA + BK‑trees.
 
 Python interface
 ----------------
->>> import pandas as pd, guardrail as gr
+>>> import pandas as pd, driftfx as dr
 >>> df = pd.read_parquet("quarter_1.parquet")
->>> gr.snapshot(df, "baseline", cols=["hospital_name"])
->>> anomalies = gr.check(pd.read_parquet("quarter_2.parquet"), "baseline", cols=["hospital_name"])
+>>> dr.snapshot(df, "baseline", cols=["hospital_name"])
+>>> anomalies = dr.check(pd.read_parquet("quarter_2.parquet"), "baseline", cols=["hospital_name"])
 >>> anomalies["hospital_name"].brand_new[:5]
 
 CLI
 ---
-    guardrail snapshot --input quarter_1.parquet --cols hospital_name --baseline baseline/
-    guardrail check    --input quarter_2.parquet --cols hospital_name --baseline baseline/
+    driftfx snapshot --input quarter_1.parquet --cols hospital_name --baseline baseline/
+    driftfx check    --input quarter_2.parquet --cols hospital_name --baseline baseline/
 """
 
 from __future__ import annotations
@@ -94,7 +92,7 @@ def _dafsa_contains(nodes: list[dict], word: str) -> bool:
 
 # Try to import Cython-optimized version, fall back to pure Python
 try:
-    from guardrail._cython.levenshtein import levenshtein as _levenshtein_cython
+    from driftfx._cython.levenshtein import levenshtein as _levenshtein_cython
     _USE_CYTHON = True
 except ImportError:
     _USE_CYTHON = False
@@ -384,7 +382,7 @@ __all__ = ["snapshot", "check", "DriftResult"]
 ###############################################################################
 
 def _parse_args():
-    p = argparse.ArgumentParser("guardrail: zero‑FP drift guardrails")
+    p = argparse.ArgumentParser("driftfx: zero‑FP drift guardrails")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("snapshot", help="Create baseline snapshot")
