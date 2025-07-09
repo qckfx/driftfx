@@ -1,4 +1,4 @@
-"""driftfx: zero‑false‑positive drift detection via DAFSA + BK‑trees.
+"""driftfx: zero‑false‑positive drift detection via set + BK‑trees.
 
 Python interface
 ----------------
@@ -27,65 +27,8 @@ import random
 import pandas as pd
 
 ###############################################################################
-# ✨  Data structures: DAFSA + BK‑tree
+# ✨  Data structures: Simple set + BK‑tree  
 ###############################################################################
-class DAFSANode:
-    __slots__ = ("final", "edges")
-
-    def __init__(self, final: bool = False):
-        self.final = final
-        self.edges: dict[str, "DAFSANode"] = {}
-
-
-def _build_trie(words: Iterable[str]) -> DAFSANode:
-    root = DAFSANode()
-    for w in words:
-        node = root
-        for ch in w:
-            node = node.edges.setdefault(ch, DAFSANode())
-        node.final = True
-    return root
-
-
-def _minimize(node: DAFSANode, registry: dict) -> DAFSANode:
-    for ch, child in list(node.edges.items()):
-        node.edges[ch] = _minimize(child, registry)
-    sig = (node.final, tuple(sorted((ch, id(c)) for ch, c in node.edges.items())))
-    if sig in registry:
-        return registry[sig]
-    registry[sig] = node
-    return node
-
-
-def _serialize_dafsa(root: DAFSANode) -> list[dict]:
-    index: dict[DAFSANode, int] = {}
-    nodes: list[dict] = []
-
-    def dfs(n: DAFSANode):
-        if n in index:
-            return
-        idx = len(nodes)
-        index[n] = idx
-        nodes.append(None)  # placeholder
-        for child in n.edges.values():
-            dfs(child)
-
-    dfs(root)
-    for n, idx in index.items():
-        nodes[idx] = {
-            "final": n.final,
-            "edges": {ch: index[c] for ch, c in n.edges.items()},
-        }
-    return nodes
-
-
-def _dafsa_contains(nodes: list[dict], word: str) -> bool:
-    idx = 0
-    for ch in word:
-        idx = nodes[idx]["edges"].get(ch, -1)
-        if idx == -1:
-            return False
-    return nodes[idx]["final"]
 
 
 # ---------------------------- BK‑tree ----------------------------------------
@@ -182,10 +125,8 @@ def _snapshot_categorical(series: pd.Series, out_dir: Path, col: str):
     # Get unique tokens
     tokens = series.dropna().astype(str).unique().tolist()
     
-    # Build DAFSA (fast - O(n*m))
-    trie = _build_trie(tokens)
-    _minimize(trie, {})
-    nodes = _serialize_dafsa(trie)
+    # No need to build complex data structures for exact matching
+    # We'll just save the tokens as a list and load as a set
     
     # Decide whether to use parallel BK-tree construction
     if len(tokens) < 1000:
@@ -212,8 +153,9 @@ def _snapshot_categorical(series: pd.Series, out_dir: Path, col: str):
     out_dir.mkdir(parents=True, exist_ok=True)
     
     # Write files with context managers
-    with open(out_dir / f"{col}.dafsa.json", "w") as f:
-        json.dump(nodes, f)
+    # Save tokens as simple list (will be loaded as set for O(1) lookups)
+    with open(out_dir / f"{col}.baseline.json", "w") as f:
+        json.dump(tokens, f)
     with open(out_dir / f"{col}.bk", "wb") as f:
         pickle.dump(bk_forest, f)
 
@@ -238,8 +180,8 @@ def _query_bktree_forest(bk_forest: list[BKTree], token: str, max_dist: int) -> 
 
 def _check_token_worker(args: tuple) -> tuple[str, list[str] | None]:
     """Worker function to check a single token."""
-    tok, nodes, bk_forest, max_dist = args
-    if _dafsa_contains(nodes, tok):
+    tok, baseline_set, bk_forest, max_dist = args
+    if tok in baseline_set:
         return tok, None
     
     near = _query_bktree_forest(bk_forest, tok, max_dist)
@@ -248,8 +190,8 @@ def _check_token_worker(args: tuple) -> tuple[str, list[str] | None]:
 
 def _check_categorical(series: pd.Series, base_dir: Path, col: str, max_dist: int):
     # Load baseline data with context managers
-    with open(base_dir / f"{col}.dafsa.json") as f:
-        nodes = json.load(f)
+    with open(base_dir / f"{col}.baseline.json") as f:
+        baseline_set = set(json.load(f))
     with open(base_dir / f"{col}.bk", "rb") as f:
         bk_forest = pickle.load(f)
     
@@ -258,8 +200,8 @@ def _check_categorical(series: pd.Series, base_dir: Path, col: str, max_dist: in
     # Get unique values to check (avoid checking duplicates)
     unique_tokens = series.dropna().astype(str).unique()
     
-    # Filter out tokens that exist in DAFSA first (fast path)
-    anomalies = [tok for tok in unique_tokens if not _dafsa_contains(nodes, tok)]
+    # Filter out tokens that exist in baseline first (fast path)
+    anomalies = [tok for tok in unique_tokens if tok not in baseline_set]
     
     if not anomalies:
         return renames, brand_new
@@ -276,12 +218,12 @@ def _check_categorical(series: pd.Series, base_dir: Path, col: str, max_dist: in
     else:
         # Large number of anomalies: check in parallel
         with Pool(min(cpu_count(), 4)) as pool:
-            tasks = [(tok, nodes, bk_forest, max_dist) for tok in anomalies]
+            tasks = [(tok, baseline_set, bk_forest, max_dist) for tok in anomalies]
             results = pool.map(_check_token_worker, tasks)
         
         for tok, near in results:
             if near is None:
-                continue  # Was in DAFSA
+                continue  # Was in baseline
             elif near:
                 renames.append((tok, near))
             else:
