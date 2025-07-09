@@ -2,7 +2,8 @@
 
 🚦  Zero-false-positive drift detection for analytics pipelines.
 
-**Fast**: Optimized with Cython - handles 10,000+ unique values in under 2 seconds.
+**Fast**: Optimized with Cython - handles 10,000+ unique values in under 2 seconds.  
+**Flexible**: Works with both CSV and Parquet files.
 
 # Get Started
 ```bash
@@ -25,8 +26,8 @@ if not result.is_clean():
 
 # CLI Usage
 ```bash
-# snapshot baseline
-$ driftfx snapshot --input data.parquet --cols name --baseline baseline/
+# snapshot baseline (CSV or Parquet)
+$ driftfx snapshot --input data.csv --cols name --baseline baseline/
 $ Snapshot complete ✓
 
 # check new batch
