@@ -5,6 +5,8 @@
 **Fast**: Optimized with Cython - handles 10,000+ unique values in under 2 seconds.  
 **Flexible**: Works with both CSV and Parquet files.
 
+> ⚠️ **Early Stage Project**: This project is in active development with frequent breaking changes. The API and data formats may change between versions. Please pin your dependencies if using in production.
+
 # Get Started
 ```bash
 pip install driftfx
