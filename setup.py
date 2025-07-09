@@ -38,8 +38,8 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="driftfx",
-    version="0.1.0",
-    description="Zero-false-positive data drift guardrails using DAFSA + BK-tree",
+    version="0.1.1",
+    description="Zero-false-positive data drift detection with Cython-optimized performance",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Chris Wood",
